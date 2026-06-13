@@ -1,0 +1,344 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ==================== SHARED ====================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String?
+  avatarUrl     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  qrCodes       QRCode[]
+  contacts      Contact[]
+  interactions  Interaction[]
+  budgetEntries BudgetEntry[]
+  bookings      Booking[]
+  teamMemberships TeamMember[]
+  apiKeys       MonitoredAPI[]
+  dnsMonitors   DNSMonitor[]
+  articles      SavedArticle[]
+}
+
+// ==================== QR CODE GENERATOR ====================
+
+model QRCode {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  targetUrl   String
+  shortCode   String   @unique
+  scans       QRScan[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([shortCode])
+}
+
+model QRScan {
+  id        String   @id @default(uuid())
+  qrCodeId  String
+  qrCode    QRCode   @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  userAgent String?
+  ipAddress String?
+  country   String?
+  city      String?
+  scannedAt DateTime @default(now())
+
+  @@index([qrCodeId])
+}
+
+// ==================== TEAM AVAILABILITY ====================
+
+model Team {
+  id        String       @id @default(uuid())
+  name      String
+  inviteCode String      @unique
+  members   TeamMember[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model TeamMember {
+  id        String         @id @default(uuid())
+  teamId    String
+  team      Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String         @default("member")
+  statuses  TeamStatus[]
+  createdAt DateTime       @default(now())
+
+  @@unique([teamId, userId])
+  @@index([teamId])
+  @@index([userId])
+}
+
+model TeamStatus {
+  id          String     @id @default(uuid())
+  memberId    String
+  member      TeamMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  date        DateTime   @db.Date
+  status      String     // "office", "wfh", "ooo", "sick"
+  note        String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([memberId, date])
+  @@index([memberId])
+  @@index([date])
+}
+
+// ==================== PERSONAL CRM ====================
+
+model Contact {
+  id           String        @id @default(uuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  email        String?
+  phone        String?
+  company      String?
+  role         String?
+  avatarUrl    String?
+  notes        String?
+  tags         String[]
+  lastContactedAt DateTime?
+  nextFollowUp DateTime?
+  interactions Interaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([userId, lastContactedAt])
+}
+
+model Interaction {
+  id          String   @id @default(uuid())
+  contactId   String
+  contact     Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String   // "email", "call", "meeting", "note"
+  summary     String
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([contactId])
+  @@index([userId])
+}
+
+// ==================== BUDGET TRACKER ====================
+
+model BudgetEntry {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Decimal  @db.Decimal(12, 2)
+  currency    String   @default("USD")
+  category    String
+  description String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, date])
+  @@index([userId, category])
+}
+
+model ExchangeRate {
+  id           String   @id @default(uuid())
+  baseCurrency String
+  targetCurrency String
+  rate         Decimal  @db.Decimal(18, 8)
+  fetchedAt    DateTime @default(now())
+
+  @@unique([baseCurrency, targetCurrency])
+  @@index([baseCurrency])
+}
+
+// ==================== BOOKING WIDGET ====================
+
+model BookingService {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  duration    Int       // minutes
+  price       Decimal   @db.Decimal(10, 2)
+  currency    String    @default("INR")
+  isActive    Boolean   @default(true)
+  bookings    Booking[]
+  availability ServiceAvailability[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ServiceAvailability {
+  id        String         @id @default(uuid())
+  serviceId String
+  service   BookingService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  dayOfWeek Int            // 0-6 (Sunday-Saturday)
+  startTime String         // "09:00"
+  endTime   String         // "17:00"
+
+  @@index([serviceId])
+}
+
+model Booking {
+  id          String         @id @default(uuid())
+  serviceId   String
+  service     BookingService @relation(fields: [serviceId], references: [id])
+  userId      String?
+  user        User?          @relation(fields: [userId], references: [id])
+  customerName  String
+  customerEmail String
+  customerPhone String?
+  startTime   DateTime
+  endTime     DateTime
+  status      String         @default("pending") // "pending", "confirmed", "cancelled", "completed"
+  paymentId   String?
+  paymentStatus String?      // "pending", "paid", "refunded"
+  notes       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([serviceId])
+  @@index([userId])
+  @@index([startTime])
+  @@index([status])
+}
+
+// ==================== API MONITOR ====================
+
+model MonitoredAPI {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  url         String
+  method      String      @default("GET")
+  headers     Json?
+  expectedStatus Int      @default(200)
+  checkInterval Int       @default(300) // seconds
+  isActive    Boolean     @default(true)
+  checks      APICheck[]
+  alerts      APIAlert[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+model APICheck {
+  id           String       @id @default(uuid())
+  apiId        String
+  api          MonitoredAPI @relation(fields: [apiId], references: [id], onDelete: Cascade)
+  statusCode   Int?
+  responseTime Int?         // milliseconds
+  isUp         Boolean
+  errorMessage String?
+  checkedAt    DateTime     @default(now())
+
+  @@index([apiId])
+  @@index([apiId, checkedAt])
+}
+
+model APIAlert {
+  id        String       @id @default(uuid())
+  apiId     String
+  api       MonitoredAPI @relation(fields: [apiId], references: [id], onDelete: Cascade)
+  type      String       // "down", "slow", "recovered"
+  message   String
+  sentAt    DateTime     @default(now())
+
+  @@index([apiId])
+}
+
+// ==================== DNS MONITOR ====================
+
+model DNSMonitor {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domain      String
+  recordType  String      @default("A") // "A", "AAAA", "CNAME", "MX", "TXT", "NS"
+  isActive    Boolean     @default(true)
+  records     DNSRecord[]
+  alerts      DNSAlert[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([userId, domain, recordType])
+  @@index([userId])
+  @@index([isActive])
+}
+
+model DNSRecord {
+  id         String     @id @default(uuid())
+  monitorId  String
+  monitor    DNSMonitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  values     String[]
+  ttl        Int?
+  fetchedAt  DateTime   @default(now())
+
+  @@index([monitorId])
+  @@index([monitorId, fetchedAt])
+}
+
+model DNSAlert {
+  id         String     @id @default(uuid())
+  monitorId  String
+  monitor    DNSMonitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  oldValues  String[]
+  newValues  String[]
+  message    String
+  sentAt     DateTime   @default(now())
+
+  @@index([monitorId])
+}
+
+// ==================== KINDLE SENDER ====================
+
+model SavedArticle {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  url         String
+  title       String
+  content     String?  @db.Text
+  author      String?
+  siteName    String?
+  status      String   @default("pending") // "pending", "sent", "failed"
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, status])
+}
+
+// ==================== TECH STACK DETECTOR ====================
+
+model TechStackScan {
+  id           String   @id @default(uuid())
+  url          String
+  technologies Json     // Array of detected technologies
+  headers      Json?
+  meta         Json?
+  scannedAt    DateTime @default(now())
+
+  @@index([url])
+}

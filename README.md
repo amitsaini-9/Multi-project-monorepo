@@ -1,159 +1,179 @@
-# Turborepo starter
+# Mini Apps Collection
 
-This Turborepo starter is maintained by the Turborepo core team.
+A monorepo containing 14+ fully functional micro-apps built with Next.js 15, Supabase, and Turborepo.
 
-## Using this example
-
-Run the following command:
-
-```sh
-npx create-turbo@latest
-```
-
-## What's inside?
-
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## 🚀 Apps
 
 ### Utilities
+- **YouTube Duration Calculator** - Calculate total watch time for playlists
+- **QR Code Generator** - Generate QR codes with analytics tracking
+- **Screenshot Beautifier** - Add frames and backgrounds to screenshots
+- **Tech Stack Detector** - Identify technologies used by websites
 
-This Turborepo has some additional tools already setup for you:
+### Business Tools
+- **Personal CRM** - Contact management for freelancers
+- **Team Availability** - Track team member locations (WFH/Office/OOO)
+- **Booking Widget** - Embeddable booking system with payments
+- **Multi-Currency Budget** - Expense tracking across currencies
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+### Monitoring
+- **DNS Monitor** - Track DNS changes with alerts
+- **API Monitor** - Monitor endpoint response times
+- **Cookie Auditor** - GDPR/CCPA compliance scanner
 
-### Build
+### Productivity
+- **Send-to-Kindle** - Save articles for e-reader consumption
 
-To build all apps and packages, run the following command:
+## 🛠️ Tech Stack
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+- **Framework**: Next.js 15 (App Router)
+- **Database**: Supabase (PostgreSQL)
+- **ORM**: Prisma
+- **Auth**: Supabase Auth (Google OAuth)
+- **Styling**: Tailwind CSS
+- **Payments**: Razorpay
+- **Monorepo**: Turborepo with pnpm
+- **Deployment**: Vercel
 
-```sh
-cd my-turborepo
-turbo build
+## 📦 Project Structure
+
+```
+mini-apps/
+├── apps/
+│   ├── youtube-duration/
+│   ├── qr-generator/
+│   ├── screenshot-beautifier/
+│   ├── team-availability/
+│   ├── personal-crm/
+│   ├── tech-stack-detector/
+│   ├── dns-monitor/
+│   ├── budget-tracker/
+│   ├── kindle-sender/
+│   ├── booking-widget/
+│   ├── api-monitor/
+│   └── cookie-auditor/
+├── packages/
+│   ├── database/         # Shared Prisma schema
+│   ├── ui/               # Shared components
+│   ├── eslint-config/
+│   └── typescript-config/
+└── supabase/
+    └── config.toml       # Supabase configuration
 ```
 
-Without global `turbo`, use your package manager:
+## 🏃 Getting Started
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+### Prerequisites
+
+- Node.js 18+
+- pnpm 9+
+- Supabase account
+- YouTube Data API key (for YouTube app)
+- Razorpay account (for booking app)
+
+### Installation
+
+```bash
+# Clone the repo
+git clone https://github.com/amitsaini-9/mini-apps.git
+cd mini-apps
+
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your credentials
+
+# Generate Prisma client
+cd packages/database
+pnpm db:generate
+
+# Run all apps in dev mode
+pnpm dev
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### Environment Variables
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-```sh
-turbo build --filter=docs
+# Database
+DATABASE_URL=your_database_url
+DIRECT_URL=your_direct_url
+
+# YouTube Data API
+YOUTUBE_API_KEY=your_youtube_api_key
+
+# Razorpay
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_secret
 ```
 
-Without global `turbo`:
+## 🚀 Development
 
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```bash
+# Run all apps
+pnpm dev
+
+# Build all apps
+pnpm build
+
+# Lint all apps
+pnpm lint
+
+# Generate Prisma client
+pnpm db:generate
+
+# Push schema changes to database
+pnpm db:push
 ```
 
-### Develop
+## 📝 Individual App Ports
 
-To develop all apps and packages, run the following command:
+- YouTube Duration: `3001`
+- QR Generator: `3002`
+- Screenshot Beautifier: `3003`
+- Team Availability: `3004`
+- Personal CRM: `3005`
+- Tech Stack Detector: `3006`
+- DNS Monitor: `3007`
+- Budget Tracker: `3008`
+- Kindle Sender: `3009`
+- Booking Widget: `3010`
+- API Monitor: `3011`
+- Cookie Auditor: `3012`
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+## 🌐 Live Deployments
 
-```sh
-cd my-turborepo
-turbo dev
-```
+All apps are deployed on Vercel with custom subdomains:
 
-Without global `turbo`, use your package manager:
+- https://yt-duration.sainiamit.com
+- https://qr.sainiamit.com
+- https://screenshot.sainiamit.com
+- https://team.sainiamit.com
+- https://crm.sainiamit.com
+- https://techstack.sainiamit.com
+- https://dns.sainiamit.com
+- https://budget.sainiamit.com
+- https://kindle.sainiamit.com
+- https://booking.sainiamit.com
+- https://api-monitor.sainiamit.com
+- https://cookie.sainiamit.com
 
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
+## 🤝 Contributing
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+Contributions welcome! Each app is self-contained and can be improved independently.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+## 📄 License
 
-```sh
-turbo dev --filter=web
-```
+MIT
 
-Without global `turbo`:
+## 👤 Author
 
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+**Amit Saini**
+- Website: [sainiamit.com](https://sainiamit.com)
+- GitHub: [@amitsaini-9](https://github.com/amitsaini-9)

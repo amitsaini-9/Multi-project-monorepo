@@ -36,3 +36,25 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Prisma
+*.db
+*.db-journal
+
+# IDEs
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Supabase
+.branches
+.temp
+supabase/.branches
+supabase/.temp
